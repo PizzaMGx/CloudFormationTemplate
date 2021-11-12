@@ -20,7 +20,8 @@ Metadata:
       - Label:
           default: "EC2 Parameters"
         Parameters:
-          - AmazonImageID
+          - AmazonImageIDPrivate
+          - AmazonImageIDPublic
           - InstanceType
           - KeyName
 
@@ -52,8 +53,12 @@ Parameters:
     Type: "AWS::EC2::KeyPair::KeyName"
     ConstraintDescription: must be the name of an existing EC2 KeyPair.
 
-  AmazonImageID:
-    Description: The ID of the Amazon machine image (AMI)
+  AmazonImageIDPrivate:
+    Description: The ID of the Amazon machine image (AMI) for the private host EC2
+    Type: String
+
+  AmazonImageIDPublic:
+    Description: The ID of the Amazon machine image (AMI) for the public bastion EC2
     Type: String
 
 Resources:
@@ -129,7 +134,7 @@ Resources:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${ExportSGtackName}-WebServerSecurityGroup
       KeyName: !Ref KeyName
-      ImageId: !Ref AmazonImageID
+      ImageId: !Ref AmazonImageIDPrivate
       Tags:
         - Key: Name
           Value: EC2 | Private Subnet 1
@@ -138,9 +143,25 @@ Resources:
           #!/bin/bash -xe
           sudo su
           yum update -y
-          yum install -y httpd
-          echo "Healthy" > /var/www/html/index.html
-          service httpd start
+
+  EC2Bastion1:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SubnetId:
+        Fn::ImportValue: !Sub ${ExportNetworkStackName}-PublicNetAZ1
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${ExportSGtackName}-SSHSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !Ref AmazonImageIDPublic
+      Tags:
+        - Key: Name
+          Value: EC2 | Bastion 1
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo su
+          yum update -y
 
   EC2Instance2:
     Type: AWS::EC2::Instance
@@ -151,7 +172,7 @@ Resources:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${ExportSGtackName}-WebServerSecurityGroup
       KeyName: !Ref KeyName
-      ImageId: !Ref AmazonImageID
+      ImageId: !Ref AmazonImageIDPrivate
       Tags:
         - Key: Name
           Value: EC2 | Private Subnet 2
@@ -160,9 +181,25 @@ Resources:
           #!/bin/bash -xe
           sudo su
           yum update -y
-          yum install -y httpd
-          echo "Healthy" > /var/www/html/index.html
-          service httpd start
+
+  EC2Bastion2:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      SubnetId:
+        Fn::ImportValue: !Sub ${ExportNetworkStackName}-PublicNetAZ2
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${ExportSGtackName}-SSHSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: !Ref AmazonImageIDPublic
+      Tags:
+        - Key: Name
+          Value: EC2 | Bastion 2
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          sudo su
+          yum update -y
 
 Outputs:
   # Export Target Group

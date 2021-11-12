@@ -28,6 +28,7 @@ Resources:
   # Create Security Group for the Bastion Host aka Jump Box
   SSHSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Retain
     Properties:
       GroupDescription: SSH Security Group
       SecurityGroupIngress:
@@ -44,6 +45,7 @@ Resources:
   # Create Security Group for the Web Server
   WebServerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Retain
     Properties:
       GroupDescription: Enable HTTP/HTTPS access via port 80/443 locked down to the load balancer SG + SSH access via port 22 locked down SSH SG
       SecurityGroupIngress:
@@ -68,6 +70,7 @@ Resources:
   # Create Security Group for the DataBase
   DataBaseSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Retain
     Properties:
       GroupDescription: Open database for access
       SecurityGroupIngress:
@@ -84,6 +87,7 @@ Resources:
   # Create Security Group for the Application Load Balancer
   ALBSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: Retain
     Properties:
       GroupDescription: Enable HTTP/HTTPS access on port 80/443
       SecurityGroupIngress:
